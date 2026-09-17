@@ -4,7 +4,7 @@ description: "Develop and manage Warhammer 40,000: Darktide mods using DML and D
 license: MIT
 metadata:
   author: deluxghost
-  version: "1.0.1"
+  version: "1.0.2"
   repository: https://github.com/deluxghost/darktide-skills
 ---
 
@@ -40,7 +40,7 @@ DML's [dtkit-patch](https://github.com/manshanko/dtkit-patch) registers the supp
 Resolve `<game>` from the request or context; ask if unknown. DML is distributed at [Nexus Mods / 19](https://www.nexusmods.com/warhammer40kdarktide/mods/19), DMF separately at [Nexus Mods / 8](https://www.nexusmods.com/warhammer40kdarktide/mods/8).
 
 - An installed mod has `<game>/mods/<mod-id>/<mod-id>.mod` and the files its descriptor references. The mod directory may be a deployment link rather than the development checkout itself.
-- Add the folder ID once to `mods/mod_load_order.txt`. Entries run top to bottom; blank lines and lines beginning with `--` are ignored, surrounding whitespace is trimmed, and inline comments are not supported. Put required mods before their dependents.
+- Add the folder ID once to `mods/mod_load_order.txt`. Entries run top to bottom; blank lines and lines beginning with `--` are ignored, surrounding whitespace is trimmed, and inline comments are not supported. Follow documented load-order requirements.
 - DML automatically inserts `dmf` first. Neither `dmf` nor `base` belongs in the user entries. DML does not discover every folder or sort mods using `info.json`.
 - Removing or commenting an entry excludes the mod on the next reload or launch. Disabling it in DMF leaves it loaded. Preserve load order when updating the loader; a separate mod manager's deployment can overwrite manual changes.
 - Replacing mod files does not reset settings: DMF stores them in the game's user configuration, outside the mod folder.
@@ -148,3 +148,13 @@ This reloads the entire mod set, rereads `mod_load_order.txt`, and recreates DMF
 DMF invokes `on_unload(false)` before a reload and restores its hooked functions; `on_unload(true)` denotes game exit. Release mod-owned resources and reverse unmanaged changes in that lifecycle. Persistent tables and game-side mutations can survive a reload, so process-start initialization and a genuinely clean game state require a restart.
 
 The reload request is queued for a subsequent update. `Managers.mod:all_mods_loaded()` can therefore still be true immediately after the request, while `Mods reloaded.` is emitted before rescanning finishes. Completion means the new loading pass has finished; initialization errors still need to be checked separately.
+
+## Optional Testing Suggestions
+
+During development or before release, consider the following checks where relevant to the mod and the user's request:
+
+- **Minimal mod set:** Launch a fresh game process with only the target mod and its required dependencies selected in `mod_load_order.txt`, then use its features. This can reveal missing module or resource loading masked by other mods.
+- **Load order:** Try the target mod near the start and end of the load order, and before and after dependencies and mods affecting the same functionality. Exercise the affected mods to find order-sensitive behavior and determine which ordering requirements need documenting.
+- **Enable and disable:** For toggleable mods, disable and re-enable in game, exercising the features in each state to confirm that their effects stop and resume as intended.
+- **DMF reload:** Reload through DMF, wait for completion, then exercise the mod again in the current game state. Check functionality as well as loading errors.
+- **Play environment:** Test in the environments the mod is intended to support. Local solo play, Realms, and official online sessions use different execution paths; results in one do not substitute for testing another.
