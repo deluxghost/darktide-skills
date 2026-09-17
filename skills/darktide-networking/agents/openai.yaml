@@ -1,0 +1,4 @@
+interface:
+  display_name: "Darktide Networking"
+  short_description: "Understand Darktide multiplayer and backend services"
+  default_prompt: "Use $darktide-networking to explain the networking model and client service interfaces relevant to this mod."

@@ -4,7 +4,7 @@ description: "Diagnose Warhammer 40,000: Darktide game and mod problems from log
 license: MIT
 metadata:
   author: deluxghost
-  version: "1.0.0"
+  version: "1.0.1"
   repository: https://github.com/deluxghost/darktide-skills
 ---
 
@@ -75,11 +75,15 @@ Value sections can be truncated by the game's report formatter even when their c
 
 Read lifecycle frames as part of the failure context: `on_exit`, `destroy`, and `shutdown_behavior_tree` identify teardown paths, while `server_correction_occurred` and `fixed_update_resimulate_unit` identify correction/resimulation paths. An error reached through these paths is not necessarily a failure of the ordinary gameplay update. Locals such as `is_server`, `is_local_unit`, and `is_resimulating` distinguish execution roles. Timer values such as `t` and `main_t` can use different gameplay/main clocks; they are not the log's UTC timestamp.
 
+Player console logs describe the player's own game process. In gameplay stack locals, `is_server = true` identifies locally hosted gameplay in that process, while `is_local_unit` describes local unit ownership.
+
 DMF `hooks.lua`, `hook_chain` and `hook_safe` frames belong to hook dispatch. Normal hooks wrap earlier hooks and receive the preceding function as their first argument, commonly named `func`; safe hooks run after the normal chain returns. Use the source path, line, arguments and wrapper upvalues to distinguish the failing operation from its wrapper. A game-source frame can receive mod-generated data, and a mod frame can merely forward a call. `[MOD]` hook-installation messages, including `needs to be delayed`, describe installation state rather than a runtime failure by themselves.
 
 ### When No Exception Explains The Symptom
 
 Use state, loading, connection and subsystem messages from the same interval rather than requiring a `Script Error`. Darktide tracks game state and active UI views separately: a state name does not establish which screen is visible, and closing views can precede completion of a session transition. When logs omit the decisive state, use `dt-cli` to inspect the corresponding managers or flags identified in source. Keep engine `error:` messages and warnings outside a structured crash block as candidates, not automatic causes or automatically harmless noise.
+
+Gameplay connections and backend HTTP/gRPC services have separate lifecycles; a failure in one does not by itself establish a failure in the other. For execution roles, gameplay synchronization, or backend request lifecycles, use the separately available `darktide-networking` skill.
 
 ## Report Interpretation Limits
 

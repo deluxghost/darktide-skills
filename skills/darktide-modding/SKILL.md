@@ -4,15 +4,21 @@ description: "Develop and manage Warhammer 40,000: Darktide mods using DML and D
 license: MIT
 metadata:
   author: deluxghost
-  version: "1.0.0"
+  version: "1.0.1"
   repository: https://github.com/deluxghost/darktide-skills
 ---
 
 # Darktide Modding
 
+## Modding Policy
+
+Develop and use mods within [Fatshark's modding policy](https://forums.fatsharkgames.com/t/darktide-modding-policy/75407). It covers effects on other players, service stability and performance, and bypassing progression or paid content. Access to game internals or authenticated APIs does not exempt a mod from those limits.
+
 ## DML And DMF
 
 [Darktide Mod Loader (DML)](https://github.com/Darktide-Mod-Framework/Darktide-Mod-Loader) connects game startup to loose Lua mod files. [Darktide Mod Framework (DMF)](https://github.com/Darktide-Mod-Framework/Darktide-Mod-Framework) is itself loaded as a mod and supplies the mod object, hooks, events, settings, localization, and developer facilities. Mod code runs inside the game's Lua environment and shares its objects; DMF coordinates extensions to that environment, rather than providing a separate application runtime.
+
+Mods change the process where they are loaded. In official multiplayer that process is a client; in local solo play or on a Realms host it also runs authoritative gameplay. Local server-side changes therefore do not establish that the same feature works on official servers. For gameplay authority, player roles, synchronization, or client backend operations, use the separately available `darktide-networking` skill.
 
 The standard DML startup chain is:
 

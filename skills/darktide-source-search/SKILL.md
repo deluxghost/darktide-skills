@@ -4,7 +4,7 @@ description: "Acquire and query Warhammer 40,000: Darktide Lua source. Use to ob
 license: MIT
 metadata:
   author: deluxghost
-  version: "1.0.0"
+  version: "1.0.1"
   repository: https://github.com/deluxghost/darktide-skills
 ---
 
@@ -33,6 +33,8 @@ Identify the game source by the following resource layout; `<source>` is the com
 
 This root may be the repository root or a generated output directory. For build-sensitive questions, establish which game version the source represents; a recent clone or generation timestamp alone does not establish a match.
 
+Client-distributed Lua includes shared logic and server-side paths used by local hosting, but is not the complete dedicated-server source. A function's presence in this tree does not establish that it executes on an official-session client.
+
 ## Source Map
 
 Routine queries primarily use `<source>/scripts/`; `content/`, `core/`, and `dialogues/` are rarely needed.
@@ -51,6 +53,7 @@ The map below selects directories for common source queries; it is not a complet
 
 - `extension_systems/`: Gameplay systems and unit extension classes, grouped by system.
 - `managers/`: Subsystem managers and shared services, grouped by subsystem.
+- `multiplayer/`: Connection and game-session state machines, joining, and session boot.
 - `ui/`: Views, HUD, reusable interface elements, and layout and drawing definitions.
 
   - `views/`: Individual views and their definitions, settings, and blueprints.
@@ -70,9 +73,11 @@ The map below selects directories for common source queries; it is not a complet
 - **Resource paths:** `require("scripts/...")` and `-- chunkname: @scripts/...` refer to resource-relative paths. Resolve them beneath `<source>`, adding `.lua` for a module path rather than a local repository prefix.
 - **Display names and identifiers:** A displayed name may resolve through a localization key shared by several internal templates or variants. Lua often stores the key, while the translated text lives in separately extracted localization data. Match the internal identifier and its references rather than treating one display-name match as unique.
 - **Classes and methods:** `class(name, super_name)` registers tables in `CLASSES`; see `scripts/foundation/utilities/class.lua`. Class tables are often local variables, and methods commonly use `Type.method = function (self, ...)`. Missing methods may be inherited from the named superclass.
-- **Instances and execution roles:** `Managers.<name>` is an instance reference; trace its assignment to the Lua class. The system key passed to `ScriptUnit.extension(unit, "<system-key>")` is not an extension class name. Unit templates in `scripts/extension_systems/unit_templates` and system registration determine the selected implementation. Server/client and local-unit/husk paths can differ, so a same-named method need not run for the unit and role being investigated.
+- **Instances and execution roles:** `Managers.<name>` is an instance reference; trace its assignment to the Lua class. The system key passed to `ScriptUnit.extension(unit, "<system-key>")` is not an extension class name. Unit templates in `scripts/extension_systems/unit_templates` and system registration determine the selected implementation. Server authority, local/remote ownership, and human/bot control are separate dimensions; follow their initialization and caller branches to identify the active implementation.
 - **Assembled templates:** Loaders can construct require paths and add fields after loading. For example, `scripts/settings/equipment/weapon_templates/weapon_templates.lua` assembles individual templates. Follow the loader and consumer when a leaf table does not explain the effective value.
 - **Source boundaries:** For native APIs such as `Unit`, `World`, and `PhysicsWorld`, Lua callers reveal usage rather than the implementation. DMF APIs and hook dispatch live in the framework's mod source, not the game script tree.
+
+For the network meaning of execution roles, gameplay synchronization, or client backend calls, use the separately available `darktide-networking` skill.
 
 Lua stack-trace line numbers can differ from line numbers in decompiled files. Locate the code using the resource path, function name, and failing expression together.
 
