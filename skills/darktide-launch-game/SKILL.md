@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Windows with Windows PowerShell 5.1 or PowerShell 7."
 metadata:
   author: deluxghost
-  version: "1.0.0"
+  version: "1.0.1"
   repository: https://github.com/deluxghost/darktide-skills
 ---
 
@@ -40,11 +40,17 @@ From this skill's directory:
 
 `Start` requires `-GameRoot` and identifies running instances by the full executable path. If that installation is already running, it returns its PIDs without changing those processes. Other installations do not block the launch: use a separate `Start -GameRoot` command for each installation. A new launch writes `steam_appid.txt` and uses the bundled launch arguments.
 
+Since 2024, Darktide has used a discovery service to find its backend endpoints. Do not pass the legacy authentication and title URL overrides together: the engine uses the supplied endpoints instead of running discovery, which can cause backend errors if the URLs are stale.
+
 `Start -ValidateOnly -GameRoot '<game>'` checks prerequisites and reports the running process count for that installation without writing files or launching the game.
 
 `Hide` and `Show` change an existing window without launching a process or writing files. A single running process is selected automatically. For multiple processes, pass `-ProcessId` using the target identified from context; otherwise list them with `Status` and ask the user to choose. No running game or an invalid PID is an error. `Show` restores minimized windows.
 
-Window operations wait up to 120 seconds for the main window (`-WindowTimeoutSeconds` overrides this), confirm the requested visibility, and return. They do not monitor the session. Errors leave any surviving game process running.
+Window operations wait up to 120 seconds for the main window (`-WindowTimeoutSeconds` overrides this), confirm the requested visibility, and return. The script does not monitor the session or close any surviving game process on error.
+
+## Session Lifecycle
+
+Follow the user's instructions about when to leave the game running or close it. Otherwise, close an instance you started solely to complete the current task once it is no longer needed, even if the task fails. Leave pre-existing instances and instances intended for the user running. If the user has taken over or it is unclear whether they still need the instance, leave it running and say so. Do not infer that a hidden or idle instance is unused. Before closing, verify the process identity, request a normal exit, and confirm that it exited.
 
 ## Results
 
