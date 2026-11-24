@@ -1,0 +1,4 @@
+interface:
+  display_name: "Darktide Custom Assets"
+  short_description: "Create custom Darktide resources and load them from mods"
+  default_prompt: "Use $darktide-custom-assets to explain or implement how this mod adds and loads its custom resources."
